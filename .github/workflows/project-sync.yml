@@ -1,0 +1,25 @@
+name: project-sync
+# Every hour, and by hand: new open issues of every repository onto the
+# organisation's project board (tools/project_sync.py). GitHub's own
+# auto-add covers only one repository on the free plan. Needs the secret
+# PROJECT_TOKEN (fine-grained, owner unseenet: Issues read, Projects read and
+# write); without it, this does nothing.
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+    steps:
+      - name: The token is needed
+        if: env.GH_TOKEN == ''
+        run: echo "::notice::No PROJECT_TOKEN secret yet - nothing to do."
+      - if: env.GH_TOKEN != ''
+        uses: actions/checkout@v4
+      - if: env.GH_TOKEN != ''
+        run: python3 tools/project_sync.py
