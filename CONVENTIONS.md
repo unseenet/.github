@@ -17,6 +17,28 @@ Build repositories (`unseenet-portable`, `unseenet-bootable`) hold no client
 code: a `versions.toml` naming what to take, the build tools and the
 workflows.
 
+## Issues and milestones
+
+- **An issue lives where the change is made**: the protocol (UN-RFCs), the
+  core, the node and the CLI in `unseenet`; a client, a build, a service or
+  the site in its own repository. Something wrong or missing in the graphical
+  client is an issue in unseenet-gui, not in unseenet.
+- **Milestones follow each repository's own versions.** unseenet's next is
+  its next core version (0.6.0); unseenet-gui's is the next GUI version
+  (0.3.0), and so on - plus `Later`. The build repositories (portable,
+  bootable) are versioned as the core they carry, so their milestones are
+  named like the core's. unseenet-docs has no releases and no milestones.
+- **A core change others must follow** gets its issue in `unseenet`, and an
+  issue in every repository that must follow it, linked both ways ("needs
+  unseenet 0.6" in the follow-up; the list of follow-ups in the core issue).
+  The follow-up goes in that repository's own next milestone.
+- **Work across several repositories** gets one tracking issue in
+  `unseenet` that links an issue in each.
+- **Every core minor release has a release plan**: one issue in `unseenet`
+  ("0.6.0 release plan") that lists the core milestone and every follow-up in
+  the other repositories that must be done for it, and the order: core,
+  nodes, clients and services, the bundle (portable, bootable), signing.
+
 ## Versions
 
 - Each repository numbers its own releases with semantic versioning on the
