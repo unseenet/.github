@@ -1,0 +1,75 @@
+name: release-build
+# First half of a release (unseenet#545): the tag must match __version__ and, for
+# a full release, have a section in CHANGELOG.md; then the tests, then the
+# package, left as the artifact "dist".
+#
+#   on: {push: {tags: ["v*"]}}
+#   jobs:
+#     build:
+#       uses: unseenet/.github/.github/workflows/release-build.yml@main
+#       with: {package: unseenet_gui}
+#     pypi:                      # stays in the calling repo: PyPI's trusted
+#       needs: build             # publishing does not accept reusable workflows
+#       environment: {name: pypi, url: https://pypi.org/p/unseenet-gui}
+#       permissions: {id-token: write}
+#       runs-on: ubuntu-latest
+#       steps:
+#         - uses: actions/download-artifact@v4
+#           with: {name: dist, path: dist/}
+#         - uses: pypa/gh-action-pypi-publish@release/v1
+#     github:
+#       needs: pypi
+#       uses: unseenet/.github/.github/workflows/release-github.yml@main
+#       with: {title: "Unseenet graphical"}
+#       permissions: {contents: write}
+on:
+  workflow_call:
+    inputs:
+      package:
+        description: 'The import name whose __version__ the tag must match (in src/)'
+        type: string
+        required: true
+      install:
+        type: string
+        default: '.[dev]'
+      setup:
+        description: 'Shell commands run after installing, before the tests'
+        type: string
+        default: ''
+      tests:
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: The tag matches the version and the changelog
+        env:
+          PACKAGE: ${{ inputs.package }}
+        run: |
+          VERSION=$(python -c "import sys; sys.path.insert(0, 'src'); import $PACKAGE; print($PACKAGE.__version__)")
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match version $VERSION" >&2; exit 1
+          fi
+          case "$VERSION" in
+            *a[0-9]*|*b[0-9]*|*rc[0-9]*) ;;   # test releases: the notes are under [Unreleased]
+            *) grep -q "^## \[$VERSION\]" CHANGELOG.md || { echo "CHANGELOG.md has no section for $VERSION" >&2; exit 1; } ;;
+          esac
+      - run: pip install -e "${{ inputs.install }}" build twine
+      - if: inputs.setup != ''
+        run: ${{ inputs.setup }}
+      - if: inputs.tests
+        run: python -m pytest -q
+      - run: python -m build && twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/

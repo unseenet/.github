@@ -1,0 +1,30 @@
+name: docs-check
+# Every repository keeps the docs of what it holds in docs/, with a small
+# mkdocs.yml so they can be previewed alone; unseenet-docs gathers them into
+# unseenet.org (unseenet#547). This builds them strictly, so broken links and
+# missing pages are found in the pull request, not on the site.
+on:
+  workflow_call:
+    inputs:
+      config:
+        type: string
+        default: mkdocs.yml
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build strictly
+        env:
+          CONFIG: ${{ inputs.config }}
+        run: |
+          if [ ! -f "$CONFIG" ]; then echo "No $CONFIG: nothing to check."; exit 0; fi
+          pip install -q mkdocs-material mkdocs-redirects
+          mkdocs build --strict -f "$CONFIG" -d "$RUNNER_TEMP/site"

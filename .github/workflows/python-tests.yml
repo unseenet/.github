@@ -1,0 +1,82 @@
+name: python-tests
+# Shared tests for every Python repository of Unseenet (unseenet#545).
+#
+#   jobs:
+#     tests:
+#       uses: unseenet/.github/.github/workflows/python-tests.yml@main
+#       with:
+#         core-main: true        # clients and services: test against the core's main
+#
+# Pull requests and main only, never builds: builds are nightly (unseenet#544).
+on:
+  workflow_call:
+    inputs:
+      python:
+        description: 'Python versions on Linux, as JSON'
+        type: string
+        default: '["3.11", "3.12", "3.13"]'
+      other-os:
+        description: 'Also Windows and macOS, on the newest Python (for what runs in the portable builds)'
+        type: boolean
+        default: false
+      core-main:
+        description: "Install the unseenet core from its main branch first, as the nightly builds use it"
+        type: boolean
+        default: false
+      core-extras:
+        description: 'Extras of the core, e.g. "[api]"'
+        type: string
+        default: ''
+      install:
+        description: 'What pip installs before the tests'
+        type: string
+        default: '.[dev]'
+      setup:
+        description: 'Shell commands run after installing, before the tests'
+        type: string
+        default: ''
+      pytest-args:
+        type: string
+        default: '-q'
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ${{ fromJSON(inputs.python) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - if: inputs.core-main
+        run: pip install "unseenet${{ inputs.core-extras }} @ git+https://github.com/unseenet/unseenet@main"
+      - run: pip install -e "${{ inputs.install }}"
+      - if: inputs.setup != ''
+        run: ${{ inputs.setup }}
+      - run: python -m pytest ${{ inputs.pytest-args }}
+
+  other-os:
+    if: inputs.other-os
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - if: inputs.core-main
+        run: pip install "unseenet${{ inputs.core-extras }} @ git+https://github.com/unseenet/unseenet@main"
+      - run: pip install -e "${{ inputs.install }}"
+      - if: inputs.setup != ''
+        shell: bash
+        run: ${{ inputs.setup }}
+      - run: python -m pytest ${{ inputs.pytest-args }}

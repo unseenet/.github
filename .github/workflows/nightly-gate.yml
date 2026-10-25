@@ -1,0 +1,92 @@
+name: nightly-gate
+# Should a nightly build run? (unseenet#544, #545) Builds are made each night
+# only when something they are made from changed since the "dev" pre-release.
+# A build records what it was made from in the dev release's notes, one line
+# per source:   Built from unseenet/unseenet@<sha>
+# (use the output "built-from" for those lines).
+#
+# Always "build" for tags, pull requests, a run by hand with force, and a run
+# by hand on a branch other than main.
+#
+#   gate:
+#     uses: unseenet/.github/.github/workflows/nightly-gate.yml@main
+#     with:
+#       sources: unseenet/unseenet unseenet/unseenet-tui unseenet/unseenet-gui
+#       force: ${{ inputs.force || false }}
+#   build:
+#     needs: gate
+#     if: needs.gate.outputs.build == 'true'
+#     ... ref: ${{ fromJSON(needs.gate.outputs.shas)['unseenet/unseenet'] }}
+on:
+  workflow_call:
+    inputs:
+      sources:
+        description: 'Other repositories the build takes from their main branch, space separated (owner/repo)'
+        type: string
+        default: ''
+      paths:
+        description: "This repository's paths that matter, space separated (empty: all)"
+        type: string
+        default: ''
+      force:
+        type: boolean
+        default: false
+    outputs:
+      build:
+        description: '"true" or "false"'
+        value: ${{ jobs.gate.outputs.build }}
+      shas:
+        description: 'JSON: each source (and this repository) to the commit to build'
+        value: ${{ jobs.gate.outputs.shas }}
+      built-from:
+        description: 'Lines for the dev release notes'
+        value: ${{ jobs.gate.outputs.built-from }}
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.check.outputs.build }}
+      shas: ${{ steps.check.outputs.shas }}
+      built-from: ${{ steps.check.outputs.built-from }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          FORCE: ${{ inputs.force }}
+          SOURCES: ${{ inputs.sources }}
+          PATHS: ${{ inputs.paths }}
+        run: |
+          SELF_SHA=$(git rev-parse HEAD)
+          SHAS="{\"$GITHUB_REPOSITORY\": \"$SELF_SHA\""
+          LINES="Built from $GITHUB_REPOSITORY@$SELF_SHA"
+          for src in $SOURCES; do
+            sha=$(git ls-remote "https://github.com/$src" refs/heads/main | cut -f1)
+            [ -n "$sha" ] || { echo "Cannot read main of $src" >&2; exit 1; }
+            SHAS="$SHAS, \"$src\": \"$sha\""
+            LINES="$LINES"$'\n'"Built from $src@$sha"
+          done
+          echo "shas=$SHAS}" >> "$GITHUB_OUTPUT"
+          { echo "built-from<<EOF_LINES"; echo "$LINES"; echo "EOF_LINES"; } >> "$GITHUB_OUTPUT"
+
+          build() { echo "$1"; echo "build=$2" >> "$GITHUB_OUTPUT"; exit 0; }
+          case "$EVENT" in schedule|workflow_dispatch) ;; *) build "A $EVENT: building." true;; esac
+          [ "$FORCE" = true ] && build "Forced: building." true
+          [ "$GITHUB_REF" = refs/heads/main ] || build "Not main: building." true
+
+          NOTES=$(gh release view dev --repo "$GITHUB_REPOSITORY" --json body -q .body 2>/dev/null || true)
+          DEV=$(git ls-remote origin refs/tags/dev | cut -f1)
+          [ -n "$DEV" ] && git cat-file -e "$DEV^{commit}" 2>/dev/null || build "No dev build yet: building." true
+          if ! git diff --quiet "$DEV" HEAD -- $PATHS; then build "$GITHUB_REPOSITORY changed since the dev build: building." true; fi
+          for src in $SOURCES; do
+            line=$(echo "$LINES" | grep "^Built from $src@")
+            echo "$NOTES" | grep -qF "$line" || build "$src changed since the dev build: building." true
+          done
+          build "Nothing changed since the dev build: skipping." false
