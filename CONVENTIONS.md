@@ -34,6 +34,10 @@ workflows.
   The follow-up goes in that repository's own next milestone.
 - **Work across several repositories** gets one tracking issue in
   `unseenet` that links an issue in each.
+- **One board for everything**: the organisation's project
+  [Unseenet](https://github.com/orgs/unseenet/projects/1) holds every open
+  issue of every repository (new ones are added by themselves), with its
+  repository, milestone, status and kind (Bug, Feature, Protocol, Infra).
 - **Every core minor release has a release plan**: one issue in `unseenet`
   ("0.6.0 release plan") that lists the core milestone and every follow-up in
   the other repositories that must be done for it, and the order: core,
