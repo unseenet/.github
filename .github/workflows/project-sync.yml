@@ -1,9 +1,10 @@
 name: project-sync
-# Every hour, and by hand: new open issues of every repository onto the
+# Every hour, and by hand: new open issues and PRs of every repository onto the
 # organisation's project board (tools/project_sync.py). GitHub's own
 # auto-add covers only one repository on the free plan. Needs the secret
-# PROJECT_TOKEN (fine-grained, owner unseenet: Issues read, Projects read and
-# write); without it, this does nothing.
+# PROJECT_TOKEN (fine-grained, owner unseenet: Issues read, Pull requests read,
+# Projects read and write), and marks each item From Core or Community; without it,
+# this does nothing.
 on:
   schedule:
     - cron: "23 * * * *"
