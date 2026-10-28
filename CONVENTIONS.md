@@ -43,6 +43,27 @@ workflows.
   the other repositories that must be done for it, and the order: core,
   nodes, clients and services, the bundle (portable, bootable), signing.
 
+## UN-RFCs
+
+- **Accepting is not a status.** When the maintainer accepts a pull request
+  to a UN-RFC - a new document, an amendment, a correction - that *change* is
+  agreed and may be merged. It never changes the document's `Status:` line.
+  Before 1.0 every protocol document is `Draft`; "Accepted" is not a status
+  and must never be written in a header ([UN-RFC 0000](https://github.com/unseenet/unseenet/blob/main/rfc/un-rfc-0000.md)
+  section 3.3.1). Record what was accepted in the pull request, its issue and
+  the CHANGELOG.
+- **`Implemented:` says what is built**, right under `Status:` in every
+  Standards Track header: `-`, `unseenet 0.5.0`, `unseenet main (unreleased)`,
+  several releases (`unseenet 0.4.0, unseenet-gateway 0.1.0`), and
+  `; partly - <what is missing> (#issue)`. The pull request that builds
+  something - in any repository - updates the line in unseenet (section 3.4).
+- **At 1.0** the implemented documents become `Proposed` and are changed only by
+  new UN-RFCs with `Updates:`, plus errata; an independent implementation that
+  interoperates makes one `Standard` (section 3.3.2).
+- `tools/check_rfc_headers.py` in unseenet checks all of this on every pull
+  request that touches `rfc/`, and a core release fails while a line still
+  says `unseenet main (unreleased)`.
+
 ## Versions
 
 - Each repository numbers its own releases with semantic versioning on the
