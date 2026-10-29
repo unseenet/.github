@@ -1,0 +1,113 @@
+name: docker-image
+# A service's container image (unseenet#571), the same way for every repository:
+# built and tested on amd64 first; then, for a release tag only, published for
+# amd64 and arm64 as :<version> and :latest (not :latest for a test release),
+# with provenance, an SBOM and a keyless cosign signature. By hand from main it
+# publishes :dev. A pull request only builds and tests - never published, and
+# never on every merge (#544, #570).
+#
+# The images build on ghcr.io/unseenet/node, which has the core, chiavdf (built
+# for musl), Tor and tini already: a service adds only its own package.
+#
+#   jobs:
+#     image:
+#       uses: unseenet/.github/.github/workflows/docker-image.yml@main
+#       permissions: {contents: read, packages: write, id-token: write, attestations: write}
+#       with:
+#         image: ghcr.io/unseenet/gateway
+#         test: |
+#           docker run --rm "$TEST_IMAGE" --version
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: "The image to publish, e.g. ghcr.io/unseenet/gateway"
+        type: string
+        required: true
+      test:
+        description: "Shell commands that test the amd64 build, tagged $TEST_IMAGE"
+        type: string
+        required: true
+      platforms:
+        type: string
+        default: linux/amd64,linux/arm64
+      context:
+        type: string
+        default: .
+      node-image:
+        description: "The base image; by default the node of the newest core release"
+        type: string
+        default: ghcr.io/unseenet/node:latest
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write                      # cosign keyless signing
+      attestations: write
+    env:
+      IMAGE: ${{ inputs.image }}
+      TEST_IMAGE: unseenet-image:test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        run: |
+          case "$GITHUB_REF" in
+            refs/tags/v*) VERSION="${GITHUB_REF_NAME#v}" ;;
+            *) VERSION="dev" ;;
+          esac
+          LATEST=false
+          case "$GITHUB_REF" in
+            refs/tags/v*) case "$VERSION" in *a[0-9]*|*b[0-9]*|*rc[0-9]*) ;; *) LATEST=true ;; esac ;;
+          esac
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "LATEST=$LATEST" >> "$GITHUB_ENV"
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build for a test (amd64)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.context }}
+          load: true
+          tags: ${{ env.TEST_IMAGE }}
+          build-args: NODE_IMAGE=${{ inputs.node-image }}
+      - name: Test
+        run: ${{ inputs.test }}
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ inputs.image }}
+          tags: |
+            type=raw,value=dev,enable=${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ env.VERSION }},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=latest,enable=${{ env.LATEST == 'true' }}
+      - name: Build and push
+        if: github.event_name != 'pull_request' && steps.meta.outputs.tags != ''
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.context }}
+          platforms: ${{ inputs.platforms }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: NODE_IMAGE=${{ inputs.node-image }}
+          provenance: mode=max
+          sbom: true
+      - uses: sigstore/cosign-installer@v3
+        if: steps.push.outcome == 'success'
+      - name: Sign
+        if: steps.push.outcome == 'success'
+        run: cosign sign --yes "${IMAGE}@${{ steps.push.outputs.digest }}"
