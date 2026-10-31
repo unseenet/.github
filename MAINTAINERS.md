@@ -6,7 +6,7 @@ maintainer's pledge*). How to get here: [MAINTAINING.md](MAINTAINING.md).
 
 | GitHub | Role | Pledge | Unseenet key |
 |---|---|---|---|
-| andlo | owner, maintainer | I have read GOVERNANCE.md at commit `602f9d5c4f3e` and commit to it. | - |
+| andlo | owner, maintainer | I have read GOVERNANCE.md at commit `602f9d5c4f3e` and commit to it. | `ed25519:5snjknxh2rz2a7pteemybpv6ylgc6pcgohweejfjnlbasbc74mhq` |
 
 ## The project's keys
 
