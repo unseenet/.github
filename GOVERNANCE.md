@@ -1,10 +1,10 @@
-# Governance of the unseenet organisation
+# Governance of the unseenet GitHub organisation
 
 **Draft for review.** Nothing here is in force before it is merged.
 
-## What this organisation is
+## What this GitHub organisation is
 
-This organisation is **one project**: it writes one implementation of
+This GitHub organisation (github.com/unseenet) is **one project**: it writes one implementation of
 Unseenet and is one publisher of releases (UN-RFC 0062). It does not own the
 protocol or the network.
 
@@ -16,7 +16,7 @@ protocol or the network.
   Theirs are as valid as ours.
 
 What follows binds everyone with write access to a repository of this
-organisation.
+GitHub organisation.
 
 ## Commitments
 
@@ -61,7 +61,7 @@ organisation.
 - **At least two owners**, so that the project does not stop when one
   person does.
 
-## If the organisation disappears
+## If the GitHub organisation disappears
 
 The network does not need it. Other publishers can release (UN-RFC 0062),
 scribes keep the code (UN-RFC 0020 section 6.4), and councils keep the lists
@@ -86,7 +86,7 @@ only after this document is merged.
 
 ## Where things stand (informative)
 
-Today the organisation has one owner and one maintainer: the founder. Just
+Today the GitHub organisation has one owner and one maintainer: the founder. Just
 as the councils are in their founding period (UN-RFC 0054 section 19), the
 roles above are written for people who have not joined yet.
 
