@@ -79,6 +79,12 @@ in MAINTAINERS.md. Your GitHub account and your key now point to each other.
 
 Use the council's talk group (UN-RFC 0061) instead, once it exists.
 
+**Think before you link.** Linking a key to your GitHub account means that
+whatever you have posted with that key can be tied to that account. If you
+want your everyday identity to stay unlinked, make a separate identity for
+this (`unseenet id-new`) and pledge with that one. You can also skip this
+step entirely: the pull request is enough.
+
 ### 7. An owner lets you in
 
 An owner checks the following, merges your pull request, and gives you
