@@ -61,6 +61,8 @@ GitHub organisation.
 
 ## The maintainer's pledge
 
+Step by step: [MAINTAINING.md](MAINTAINING.md).
+
 Before someone becomes a maintainer or an owner, they open a pull request
 that adds them to [MAINTAINERS.md](MAINTAINERS.md) with the line
 
