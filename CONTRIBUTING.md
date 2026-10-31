@@ -14,6 +14,8 @@ Ideas, criticism and code are welcome, in any of the Unseenet repositories.
 - **Docs** of what a repository holds live in its own `docs/`; the site
   [unseenet.org](https://unseenet.org) gathers them.
 
+- **No forms to sign.** A pull request is given under the repository's own
+  licence; no CLA, no sign-off, no signed commits needed.
 - **What everyone with write access commits to**, and how roles are given
   and lost: [GOVERNANCE.md](https://github.com/unseenet/.github/blob/main/GOVERNANCE.md).
 

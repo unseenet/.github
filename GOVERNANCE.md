@@ -61,6 +61,24 @@ GitHub organisation.
 - **At least two owners**, so that the project does not stop when one
   person does.
 
+## The maintainer's pledge
+
+Before someone becomes a maintainer or an owner, they open a pull request
+that adds them to [MAINTAINERS.md](MAINTAINERS.md) with the line
+
+> I have read GOVERNANCE.md at commit `<hash>` and commit to it.
+
+The pull request from their own account is the signature, and it stays in
+the history. The hash says which version they agreed to. They MAY also post
+the same statement in the network, signed with their Unseenet identity key,
+so that people there can see who can change the code. When this document
+changes in substance, maintainers confirm the new version the same way.
+
+**Contributors sign nothing.** A pull request is given under the
+repository's own licence. There is no CLA, no sign-off line and no
+requirement to sign commits. Taking part has to stay as easy as opening a
+pull request.
+
 ## If the GitHub organisation disappears
 
 The network does not need it. Other publishers can release (UN-RFC 0062),
@@ -75,6 +93,10 @@ Rulesets on every repository's default branch:
 - **Main:** changes only by pull request, never force-pushed or deleted.
 - **Required checks:** each repository's tests; in `unseenet` also
   `tools/check_rfc_headers.py`.
+- **No required approvals.** While there may be only one maintainer, a
+  required review would stop all work. Checks, not people, guard main.
+- **Squash merge.** GitHub signs the merge commit, so main is signed
+  without contributors having to sign anything.
 - **Release tags** (`v*`, `unseenet-gui *`, …) are created only by the
   release workflows.
 - **`rfc/`:** once the mirror runs, only the mirror changes it (CODEOWNERS).
