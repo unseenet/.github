@@ -1,7 +1,5 @@
 # Governance of the unseenet GitHub organisation
 
-**Draft for review.** Nothing here is in force before it is merged.
-
 ## What this GitHub organisation is
 
 This GitHub organisation (github.com/unseenet) is **one project**: it writes one implementation of
