@@ -14,4 +14,7 @@ Ideas, criticism and code are welcome, in any of the Unseenet repositories.
 - **Docs** of what a repository holds live in its own `docs/`; the site
   [unseenet.org](https://unseenet.org) gathers them.
 
+- **What everyone with write access commits to**, and how roles are given
+  and lost: [GOVERNANCE.md](https://github.com/unseenet/.github/blob/main/GOVERNANCE.md).
+
 Pre-alpha: nothing is stable, and nothing has had a security review yet.
