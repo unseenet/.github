@@ -3,6 +3,10 @@ name: release-github
 # its CHANGELOG.md section as the notes (the Unreleased section for a test
 # release, which is marked as a pre-release), and the "dist" artifact attached
 # if there is one. A release another workflow already made is updated.
+#
+# server: true (with server: true in release-build.yml) also attaches the server
+# requirements and SHA256SUMS.txt over every file, for the project key to sign
+# (tools/project/sign_release.py --repo <repo> <tag> in unseenet/unseenet, #827).
 on:
   workflow_call:
     inputs:
@@ -13,6 +17,10 @@ on:
       attach-dist:
         type: boolean
         default: true
+      server:
+        description: 'Attach the server requirements and SHA256SUMS.txt'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -27,6 +35,17 @@ jobs:
         with:
           name: dist
           path: dist/
+      - if: inputs.server
+        uses: actions/download-artifact@v4
+        with:
+          name: server
+          path: server/
+      - name: Checksums, for the project key to sign
+        if: inputs.server
+        run: |
+          mkdir -p dist
+          cp server/* dist/
+          (cd dist && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt)
       - name: Notes from CHANGELOG.md
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
